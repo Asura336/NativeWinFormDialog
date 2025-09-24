@@ -1,0 +1,8 @@
+{
+  "name": "com.asurafanclub.nativewinformdialog",
+  "version": "1.0.0",
+  "displayName": "NativeWinFormDialog",
+  "unity": "2022.3",
+  "hideInEditor": false,
+  "description": "包含常见 WinForm 会话，提供 AOT 编译的程序集，透过 DllImport 互操作，使应用程序在运行期可以使用 WinForm 会话。需要 Windows x64 系统。"
+}
