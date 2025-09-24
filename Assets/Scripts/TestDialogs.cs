@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+using DialogLib;
+using DialogLib.Data;
 using UnityEngine;
 
 public class TestDialogs : MonoBehaviour
@@ -18,17 +18,17 @@ public class TestDialogs : MonoBehaviour
         GUILayout.Box("Commands: ");
         GUILayout.BeginVertical();
 
-        if (GUILayout.Button("MessageBox(Native)"))
+        if (GUILayout.Button("MessageBox"))
         {
-            var res = DialogLib.MessageBox.Show(
+            var res = MessageBox.Show(
                  "Hello World 消息内容",
                  "Message(Native) 消息头",
-                 DialogLib.Data.MessageBoxButtons.OKCancel);
+                 MessageBoxButtons.OKCancel);
             Debug.Log(res);
         }
-        if (GUILayout.Button("OpenFileDialog(Native)"))
+        if (GUILayout.Button("OpenFileDialog"))
         {
-            var ofn = new DialogLib.OpenFileDialog
+            var ofn = new OpenFileDialog
             {
                 Title = "保存文件",
                 DefaultExt = "txt",
@@ -42,9 +42,9 @@ public class TestDialogs : MonoBehaviour
             Debug.Log(ofn.FileName);
             Debug.Log(string.Join("\r\n", ofn.FileNames));
         }
-        if (GUILayout.Button("SaveFileDialog(Native)"))
+        if (GUILayout.Button("SaveFileDialog"))
         {
-            var sfn = new DialogLib.SaveFileDialog
+            var sfn = new SaveFileDialog
             {
                 Title = "保存文件",
                 DefaultExt = "txt",
@@ -63,9 +63,9 @@ public class TestDialogs : MonoBehaviour
             Debug.Log(res);
             Debug.Log(sfn.FileName);
         }
-        if (GUILayout.Button("FolderBrowser(Native)"))
+        if (GUILayout.Button("FolderBrowser"))
         {
-            var fb = new DialogLib.FolderBrowserDialog
+            var fb = new FolderBrowserDialog
             {
                 RootFolder = Environment.SpecialFolder.MyDocuments,
                 Multiselect = true,
@@ -80,9 +80,9 @@ public class TestDialogs : MonoBehaviour
             Debug.Log(fb.SelectedPath);
             Debug.Log(string.Join("\r\n", fb.SelectedPaths));
         }
-        if (GUILayout.Button("ColorDialog(Native)"))
+        if (GUILayout.Button("ColorDialog"))
         {
-            var cd = new DialogLib.ColorDialog
+            var cd = new ColorDialog
             {
                 AllowFullOpen = true,
                 AnyColor = true,
@@ -90,6 +90,7 @@ public class TestDialogs : MonoBehaviour
                 CustomColors = new Color32[] { Color.red, Color.green, Color.blue, Color.cyan },
             };
             var res = cd.ShowDialog();
+            Debug.Log(res);
             var color = cd.Color;
             Debug.Log($"Color => <color=#{color.r:X2}{color.g:X2}{color.b:X2}FF>{color}</color>");
         }
