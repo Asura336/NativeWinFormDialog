@@ -104,9 +104,10 @@ namespace DialogLib.Data
 
         public static void Free(ref UnicodeByteBuffer target)
         {
-            if (target.length > 0)
+            if (target.length > 0 && target.allocated)
             {
-                Marshal.FreeHGlobal(new IntPtr(target.buffer));
+                UnsafeHelper.Free(target.buffer);
+                target.allocated = false;
             }
             target.length = 0;
             target.count = 0;

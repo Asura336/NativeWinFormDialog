@@ -51,16 +51,18 @@ namespace DialogLib
             UnicodeByteBuffer.FillMalloc(ref paramsPnt->Description, Description);
             UnicodeByteBuffer.FillMalloc(ref paramsPnt->InitialDirectory, InitialDirectory);
 
-            const int tinyBufferLen = 256;
+            //const int tinyBufferLen = 256;
             var selectedPathPnt = @paramsPnt->SelectedPath;
-            var _tinySelectedPath = stackalloc byte[tinyBufferLen];
-            selectedPathPnt.buffer = _tinySelectedPath;
-            selectedPathPnt.length = tinyBufferLen;
+            //var _tinySelectedPath = stackalloc byte[tinyBufferLen];
+            //selectedPathPnt.buffer = _tinySelectedPath;
+            //selectedPathPnt.length = tinyBufferLen;
+            //selectedPathPnt.allocated = false;
 
             var selectedPathsPnt = @paramsPnt->SelectedPaths;
-            var _tinySelectedPaths = stackalloc byte[tinyBufferLen];
-            selectedPathsPnt.buffer = _tinySelectedPaths;
-            selectedPathsPnt.length = tinyBufferLen;
+            //var _tinySelectedPaths = stackalloc byte[tinyBufferLen];
+            //selectedPathsPnt.buffer = _tinySelectedPaths;
+            //selectedPathsPnt.length = tinyBufferLen;
+            //selectedPathsPnt.allocated = false;
 
             UnicodeByteBuffer.FillMalloc(ref selectedPathPnt, SelectedPath);
             UnicodeByteBuffer.FillMalloc(ref selectedPathsPnt, SelectedPaths);
@@ -76,11 +78,11 @@ namespace DialogLib
 
             UnicodeByteBuffer.Free(ref @paramsPnt->Description);
             UnicodeByteBuffer.Free(ref @paramsPnt->InitialDirectory);
-            if (paramsPnt->SelectedPath.buffer != _tinySelectedPath)
+            //if (paramsPnt->SelectedPath.buffer != _tinySelectedPath)
             {
                 UnicodeByteBuffer.Free(ref @paramsPnt->SelectedPath);
             }
-            if (paramsPnt->SelectedPaths.buffer != _tinySelectedPaths)
+            //if (paramsPnt->SelectedPaths.buffer != _tinySelectedPaths)
             {
                 UnicodeByteBuffer.Free(ref @paramsPnt->SelectedPaths);
             }
