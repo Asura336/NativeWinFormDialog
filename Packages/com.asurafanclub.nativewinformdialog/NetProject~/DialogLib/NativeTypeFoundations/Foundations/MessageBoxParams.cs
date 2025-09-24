@@ -8,8 +8,8 @@ namespace DialogLib.Foundations
     public struct MessageBoxParams
     {
         public IntPtr Owner;
-        [MarshalAs(UnmanagedType.LPWStr)] public string Text;
-        [MarshalAs(UnmanagedType.LPWStr)] public string Caption;
+        public UnicodeByteBuffer Text;
+        public UnicodeByteBuffer Caption;
         public MessageBoxButtons Buttons;
         public MessageBoxIcon Icon;
         public MessageBoxDefaultButton DefaultButton;

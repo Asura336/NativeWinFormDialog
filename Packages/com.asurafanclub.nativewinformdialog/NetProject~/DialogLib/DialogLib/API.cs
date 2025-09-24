@@ -7,17 +7,16 @@ namespace DialogLib;
 public class API
 {
     [UnmanagedCallersOnly(EntryPoint = "ShowMessageBox")]
-    public static unsafe Data.DialogResult ShowMessageBox(IntPtr IN)
-    {
-        var @params = Marshal.PtrToStructure<MessageBoxParams>(IN);
+    public static unsafe Data.DialogResult ShowMessageBox(MessageBoxParams* Param)
+    { 
         var result = MessageBox.Show(
-            owner: new InternalWindowHandle(@params.Owner),
-            text: @params.Text,
-            caption: @params.Caption,
-            buttons: (System.Windows.Forms.MessageBoxButtons)@params.Buttons,
-            icon: (System.Windows.Forms.MessageBoxIcon)@params.Icon,
-            defaultButton: (System.Windows.Forms.MessageBoxDefaultButton)@params.DefaultButton,
-            options: (System.Windows.Forms.MessageBoxOptions)@params.Options);
+            owner: new InternalWindowHandle(Param->Owner),
+            text: Param->Text.ToString(),
+            caption: Param->Caption.ToString(),
+            buttons: (System.Windows.Forms.MessageBoxButtons)Param->Buttons,
+            icon: (System.Windows.Forms.MessageBoxIcon)Param->Icon,
+            defaultButton: (System.Windows.Forms.MessageBoxDefaultButton)Param->DefaultButton,
+            options: (System.Windows.Forms.MessageBoxOptions)Param->Options);
         return (Data.DialogResult)result;
     }
 

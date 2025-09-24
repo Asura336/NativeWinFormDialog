@@ -21,6 +21,10 @@ namespace DialogLib.Data
         /// 缓冲区头
         /// </summary>
         public byte* buffer;
+        /// <summary>
+        /// 为缓冲区指定过堆内存
+        /// </summary>
+        public bool allocated;
 
         public static void FillMalloc(ref UnicodeByteBuffer target, string src)
         {
@@ -89,17 +93,23 @@ namespace DialogLib.Data
         {
             if (capacity > target.length)
             {
+                if (target.allocated)
+                {
+                    UnsafeHelper.Free(target.buffer);
+                }
                 target.length = MathHelper.CeilPow2(capacity);
-                IntPtr ptr = Marshal.AllocHGlobal(target.length);
-                target.buffer = (byte*)ptr.ToPointer();
+                target.buffer = UnsafeHelper.MAllocT<byte>(target.length);
             }
         }
 
         public static void Free(ref UnicodeByteBuffer target)
         {
+            if (target.length > 0)
+            {
+                Marshal.FreeHGlobal(new IntPtr(target.buffer));
+            }
             target.length = 0;
             target.count = 0;
-            Marshal.FreeHGlobal(new IntPtr(target.buffer));
         }
 
         public override readonly string ToString()
