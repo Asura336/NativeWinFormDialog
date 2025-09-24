@@ -99,6 +99,7 @@ namespace DialogLib.Data
                 }
                 target.length = MathHelper.CeilPow2(capacity);
                 target.buffer = UnsafeHelper.MAllocT<byte>(target.length);
+                target.allocated = true;
             }
         }
 

@@ -1,7 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using DialogLib.Data;
 using DialogLib.Foundations;
+using DialogLib.Util;
 
 namespace DialogLib
 {
@@ -47,46 +49,81 @@ namespace DialogLib
             GetParams(out var @params);
             DialogResult result = default;
 
-            FolderBrowserDialogParams* @paramsPnt = &@params;
-            UnicodeByteBuffer.FillMalloc(ref paramsPnt->Description, Description);
-            UnicodeByteBuffer.FillMalloc(ref paramsPnt->InitialDirectory, InitialDirectory);
+            FolderBrowserDialogParams* paramPnt = &@params;
 
-            //const int tinyBufferLen = 256;
-            var selectedPathPnt = @paramsPnt->SelectedPath;
-            //var _tinySelectedPath = stackalloc byte[tinyBufferLen];
-            //selectedPathPnt.buffer = _tinySelectedPath;
-            //selectedPathPnt.length = tinyBufferLen;
-            //selectedPathPnt.allocated = false;
+            const int tinyBufferLen = 256;
+            var encoding = Encoding.Unicode;
 
-            var selectedPathsPnt = @paramsPnt->SelectedPaths;
-            //var _tinySelectedPaths = stackalloc byte[tinyBufferLen];
-            //selectedPathsPnt.buffer = _tinySelectedPaths;
-            //selectedPathsPnt.length = tinyBufferLen;
-            //selectedPathsPnt.allocated = false;
+            int desc_size = string.IsNullOrEmpty(Description) ? 0 : encoding.GetByteCount(Description);
+            bool desc_alloc = desc_size > tinyBufferLen;
+            Span<byte> desc_buff = desc_alloc
+                ? new Span<byte>(UnsafeHelper.MAllocT<byte>(desc_size), desc_size)
+                : desc_size is 0 ? Span<byte>.Empty : stackalloc byte[desc_size];
 
-            UnicodeByteBuffer.FillMalloc(ref selectedPathPnt, SelectedPath);
-            UnicodeByteBuffer.FillMalloc(ref selectedPathsPnt, SelectedPaths);
+            int initDir_size = string.IsNullOrEmpty(InitialDirectory) ? 0 : encoding.GetByteCount(InitialDirectory);
+            bool initDir_alloc = initDir_size > tinyBufferLen;
+            Span<byte> initDir_buff = initDir_alloc
+                ? new Span<byte>(UnsafeHelper.MAllocT<byte>(initDir_size), initDir_size)
+                : initDir_size is 0 ? Span<byte>.Empty : stackalloc byte[initDir_size];
 
-
-            result = ShowFolderBrowserDialog(paramsPnt);
-            SelectedPath = paramsPnt->SelectedPath.ToString();
-            if (paramsPnt->SelectedPaths.count > 0)
+            fixed (byte* desc_pnt = desc_buff, initDir_pnt = initDir_buff)
             {
-                SelectedPaths = paramsPnt->SelectedPaths.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                var _desc = &paramPnt->Description;
+                _desc->allocated = desc_alloc;
+                _desc->length = desc_buff.Length;
+                _desc->count = encoding.GetBytes(Description, desc_buff);
+                _desc->buffer = desc_pnt;
+
+                var _initDir = &paramPnt->InitialDirectory;
+                _initDir->allocated = initDir_alloc;
+                _initDir->length = initDir_buff.Length;
+                _initDir->count = encoding.GetBytes(InitialDirectory, initDir_buff);
+                _initDir->buffer = initDir_pnt;
+
+                // 在这里尝试用栈缓冲区预分配时程序崩溃
+                var selectedPathPnt = paramPnt->SelectedPath;
+                var selectedPathsPnt = paramPnt->SelectedPaths;
+                UnicodeByteBuffer.FillMalloc(ref selectedPathPnt, SelectedPath);
+                UnicodeByteBuffer.FillMalloc(ref selectedPathsPnt, SelectedPaths);
+
+                result = ShowFolderBrowserDialog(paramPnt);
+                SelectedPath = paramPnt->SelectedPath.ToString();
+                if (paramPnt->SelectedPaths.count > 0)
+                {
+                    SelectedPaths = paramPnt->SelectedPaths.ToString()
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                }
+
+                UnicodeByteBuffer.Free(ref paramPnt->Description);
+                UnicodeByteBuffer.Free(ref paramPnt->InitialDirectory);
             }
 
-
-            UnicodeByteBuffer.Free(ref @paramsPnt->Description);
-            UnicodeByteBuffer.Free(ref @paramsPnt->InitialDirectory);
-            //if (paramsPnt->SelectedPath.buffer != _tinySelectedPath)
-            {
-                UnicodeByteBuffer.Free(ref @paramsPnt->SelectedPath);
-            }
-            //if (paramsPnt->SelectedPaths.buffer != _tinySelectedPaths)
-            {
-                UnicodeByteBuffer.Free(ref @paramsPnt->SelectedPaths);
-            }
+            UnicodeByteBuffer.Free(ref paramPnt->SelectedPath);
+            UnicodeByteBuffer.Free(ref paramPnt->SelectedPaths);
             return result;
+
+
+            ////--------
+            //// Origin
+            //UnicodeByteBuffer.FillMalloc(ref paramPnt->Description, Description);
+            //UnicodeByteBuffer.FillMalloc(ref paramPnt->InitialDirectory, InitialDirectory);
+
+            //var selectedPathPnt = paramPnt->SelectedPath;
+            //var selectedPathsPnt = paramPnt->SelectedPaths;
+            //UnicodeByteBuffer.FillMalloc(ref selectedPathPnt, SelectedPath);
+            //UnicodeByteBuffer.FillMalloc(ref selectedPathsPnt, SelectedPaths);
+
+            //result = ShowFolderBrowserDialog(paramPnt);
+            //SelectedPath = paramPnt->SelectedPath.ToString();
+            //if (paramPnt->SelectedPaths.count > 0)
+            //{
+            //    SelectedPaths = paramPnt->SelectedPaths.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            //}
+            //UnicodeByteBuffer.Free(ref paramPnt->Description);
+            //UnicodeByteBuffer.Free(ref paramPnt->InitialDirectory);
+            //UnicodeByteBuffer.Free(ref paramPnt->SelectedPath);
+            //UnicodeByteBuffer.Free(ref paramPnt->SelectedPaths);
+            //return result;
         }
 
         void GetParams(out FolderBrowserDialogParams @params)

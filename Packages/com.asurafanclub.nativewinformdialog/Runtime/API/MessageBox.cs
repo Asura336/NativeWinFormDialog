@@ -28,17 +28,17 @@ namespace DialogLib
             DialogResult result = default;
             var paramPnt = &@params;
 
-            const int tinyBufferLen = 256;
+            const int tinyBufferLen = 512;
             var encoding = Encoding.Unicode;
 
-            int _textByteSize = encoding.GetByteCount(text);
+            int _textByteSize = string.IsNullOrEmpty(text) ? 0 : encoding.GetByteCount(text);
             bool _textBufMAlloc = _textByteSize > tinyBufferLen;
             Span<byte> _textBuf = _textBufMAlloc
                 ? new Span<byte>(UnsafeHelper.MAllocT<byte>(_textByteSize), _textByteSize)
                 : stackalloc byte[_textByteSize];
             encoding.GetBytes(text, _textBuf);
 
-            int _captionByteSize = encoding.GetByteCount(caption);
+            int _captionByteSize = string.IsNullOrEmpty(caption) ? 0 : encoding.GetByteCount(caption);
             bool _captionBufMAlloc = _captionByteSize > tinyBufferLen;
             Span<byte> _captionBuf = _captionBufMAlloc
                 ? new Span<byte>(UnsafeHelper.MAllocT<byte>(_captionByteSize), _captionByteSize)
@@ -60,10 +60,10 @@ namespace DialogLib
                 _caption->buffer = captionBufPnt;
 
                 result = ShowMessageBox(paramPnt);
-
-                if (_textBufMAlloc) { UnsafeHelper.Free(textBufPnt); }
-                if (_captionBufMAlloc) { UnsafeHelper.Free(captionBufPnt); }
             }
+
+            UnicodeByteBuffer.Free(ref paramPnt->Text);
+            UnicodeByteBuffer.Free(ref paramPnt->Caption);
 
             return result;
         }
