@@ -1,7 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using DialogLib.Data;
 using DialogLib.Foundations;
+using DialogLib.Util;
 
 namespace DialogLib
 {
@@ -74,42 +76,85 @@ namespace DialogLib
             GetParams(out var @params);
             DialogResult result = default;
 
-            var inPnt = Marshal.AllocHGlobal(Marshal.SizeOf<OpenFileDialogParams>());
-            Marshal.StructureToPtr(@params, inPnt, fDeleteOld: false);
+            var paramPnt = &@params;
+
+            // 用堆分配初始化读写缓冲区
+            var fileNamePnt = paramPnt->FileName;
+            var fileNamesPnt = paramPnt->FileNames;
+            UnicodeByteBuffer.FillMalloc(ref fileNamePnt, FileName);
+            UnicodeByteBuffer.FillMalloc(ref fileNamesPnt, FileNames);
 
             const int tinyBufferLen = 256;
-            var resObj = new OpenFileDialogResult();
-            var resObjPnt = &resObj;
-            var fileNamePnt = &resObjPnt->FileName;
-            var fileNamesPnt = &resObjPnt->FileNames;
+            var encoding = Encoding.Unicode;
 
-            var _tinyFileName = stackalloc byte[tinyBufferLen];
-            var _tinyFileNames = stackalloc byte[tinyBufferLen];
+            int defEx_size = string.IsNullOrEmpty(DefaultExt) ? 0 : encoding.GetByteCount(DefaultExt);
+            bool defEx_alloc = defEx_size > tinyBufferLen;
+            Span<byte> defEx_buff = defEx_alloc
+                ? new Span<byte>(UnsafeHelper.MAllocT<byte>(defEx_size), defEx_size)
+                : defEx_size is 0 ? Span<byte>.Empty : stackalloc byte[defEx_size];
 
-            fileNamePnt->buffer = _tinyFileName;
-            fileNamePnt->length = tinyBufferLen;
+            int filter_size = string.IsNullOrEmpty(DefaultExt) ? 0 : encoding.GetByteCount(DefaultExt);
+            bool filter_alloc = filter_size > tinyBufferLen;
+            Span<byte> filter_buff = filter_alloc
+                ? new Span<byte>(UnsafeHelper.MAllocT<byte>(filter_size), filter_size)
+                : filter_size is 0 ? Span<byte>.Empty : stackalloc byte[filter_size];
 
-            fileNamesPnt->buffer = _tinyFileNames;
-            fileNamesPnt->length = tinyBufferLen;
+            int initDir_size = string.IsNullOrEmpty(DefaultExt) ? 0 : encoding.GetByteCount(DefaultExt);
+            bool initDir_alloc = initDir_size > tinyBufferLen;
+            Span<byte> initDir_buff = initDir_alloc
+                ? new Span<byte>(UnsafeHelper.MAllocT<byte>(initDir_size), initDir_size)
+                : initDir_size is 0 ? Span<byte>.Empty : stackalloc byte[initDir_size];
 
-            ShowOpenFileDialog(inPnt, resObjPnt);
-            result = resObjPnt->DialogResult;
+            int title_size = string.IsNullOrEmpty(DefaultExt) ? 0 : encoding.GetByteCount(DefaultExt);
+            bool title_alloc = title_size > tinyBufferLen;
+            Span<byte> title_buff = title_alloc
+                ? new Span<byte>(UnsafeHelper.MAllocT<byte>(title_size), title_size)
+                : title_size is 0 ? Span<byte>.Empty : stackalloc byte[title_size];
 
-            FileName = resObjPnt->FileName.ToString();
-            if (resObjPnt->FileName.buffer != _tinyFileName)
+            fixed (byte* defEx_pnt = defEx_buff, filter_pnt = filter_buff, initDir_pnt = initDir_buff, title_pnt = title_buff)
             {
-                UnicodeByteBuffer.Free(ref resObjPnt->FileName);
-            }
-            if (resObjPnt->FileNames.count > 0)
-            {
-                FileNames = resObjPnt->FileNames.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                if (resObjPnt->FileNames.buffer != _tinyFileNames)
-                {
-                    UnicodeByteBuffer.Free(ref resObjPnt->FileNames);
-                }
+                var _defEx = &paramPnt->DefaultExt;
+                _defEx->allocated = defEx_alloc;
+                _defEx->length = defEx_buff.Length;
+                _defEx->count = encoding.GetBytes(DefaultExt, defEx_buff);
+                _defEx->buffer = defEx_pnt;
+
+                var _filter = &paramPnt->DefaultExt;
+                _filter->allocated = defEx_alloc;
+                _filter->length = defEx_buff.Length;
+                _filter->count = encoding.GetBytes(DefaultExt, defEx_buff);
+                _filter->buffer = defEx_pnt;
+
+                var _initDir = &paramPnt->DefaultExt;
+                _initDir->allocated = defEx_alloc;
+                _initDir->length = defEx_buff.Length;
+                _initDir->count = encoding.GetBytes(DefaultExt, defEx_buff);
+                _initDir->buffer = defEx_pnt;
+
+                var _title = &paramPnt->DefaultExt;
+                _title->allocated = defEx_alloc;
+                _title->length = defEx_buff.Length;
+                _title->count = encoding.GetBytes(DefaultExt, defEx_buff);
+                _title->buffer = defEx_pnt;
+
+                result = ShowOpenFileDialog(paramPnt);
+
+                UnicodeByteBuffer.Free(ref paramPnt->DefaultExt);
+                UnicodeByteBuffer.Free(ref paramPnt->Filter);
+                UnicodeByteBuffer.Free(ref paramPnt->InitialDirectory);
+                UnicodeByteBuffer.Free(ref paramPnt->Title);
             }
 
-            Marshal.FreeHGlobal(inPnt);
+            FileName = paramPnt->FileName.ToString();
+            if (paramPnt->FileNames.count > 0)
+            {
+                FileNames = paramPnt->FileNames.ToString()
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            UnicodeByteBuffer.Free(ref paramPnt->FileName);
+            UnicodeByteBuffer.Free(ref paramPnt->FileNames);
+
             return result;
         }
 
@@ -131,11 +176,11 @@ namespace DialogLib
                 ValidateNames = ValidateNames,
                 ClientGuid = ClientGuid,
                 FilterIndex = FilterIndex,
-                DefaultExt = DefaultExt,
-                FileName = FileName,
-                Filter = Filter,
-                InitialDirectory = InitialDirectory,
-                Title = Title,
+                //DefaultExt = DefaultExt,
+                //FileName = FileName,
+                //Filter = Filter,
+                //InitialDirectory = InitialDirectory,
+                //Title = Title,
 
                 Multiselect = Multiselect,
                 ReadOnlyChecked = ReadOnlyChecked,
@@ -146,7 +191,6 @@ namespace DialogLib
         }
 
         [DllImport("DialogLib", CharSet = CharSet.Unicode)]
-        static extern unsafe void ShowOpenFileDialog([In] IntPtr IN,
-            OpenFileDialogResult* Res);
+        static extern unsafe DialogResult ShowOpenFileDialog([In, Out] OpenFileDialogParams* Params);
     }
 }

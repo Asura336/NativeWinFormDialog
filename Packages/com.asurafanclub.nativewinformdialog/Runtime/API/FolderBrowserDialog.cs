@@ -51,6 +51,12 @@ namespace DialogLib
 
             FolderBrowserDialogParams* paramPnt = &@params;
 
+            // ³¢ÊÔÓÃÕ»»º³åÇøÔ¤·ÖÅäÊ±³ÌÐò±ÀÀ££¬Ê¹ÓÃ¶Ñ·ÖÅä¶ÁÐ´»º³åÇø
+            var selectedPathPnt = paramPnt->SelectedPath;
+            var selectedPathsPnt = paramPnt->SelectedPaths;
+            UnicodeByteBuffer.FillMalloc(ref selectedPathPnt, SelectedPath);
+            UnicodeByteBuffer.FillMalloc(ref selectedPathsPnt, SelectedPaths);
+
             const int tinyBufferLen = 256;
             var encoding = Encoding.Unicode;
 
@@ -79,12 +85,6 @@ namespace DialogLib
                 _initDir->length = initDir_buff.Length;
                 _initDir->count = encoding.GetBytes(InitialDirectory, initDir_buff);
                 _initDir->buffer = initDir_pnt;
-
-                // ÔÚÕâÀï³¢ÊÔÓÃÕ»»º³åÇøÔ¤·ÖÅäÊ±³ÌÐò±ÀÀ£
-                var selectedPathPnt = paramPnt->SelectedPath;
-                var selectedPathsPnt = paramPnt->SelectedPaths;
-                UnicodeByteBuffer.FillMalloc(ref selectedPathPnt, SelectedPath);
-                UnicodeByteBuffer.FillMalloc(ref selectedPathsPnt, SelectedPaths);
 
                 result = ShowFolderBrowserDialog(paramPnt);
                 SelectedPath = paramPnt->SelectedPath.ToString();

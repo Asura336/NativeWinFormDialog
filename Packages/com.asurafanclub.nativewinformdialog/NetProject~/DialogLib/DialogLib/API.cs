@@ -8,7 +8,7 @@ public class API
 {
     [UnmanagedCallersOnly(EntryPoint = "ShowMessageBox")]
     public static unsafe Data.DialogResult ShowMessageBox(MessageBoxParams* Param)
-    { 
+    {
         var result = MessageBox.Show(
             owner: new InternalWindowHandle(Param->Owner),
             text: Param->Text.ToString(),
@@ -21,45 +21,43 @@ public class API
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ShowOpenFileDialog")]
-    public static unsafe void ShowOpenFileDialog(IntPtr IN, OpenFileDialogResult* Res)
+    public static unsafe Data.DialogResult ShowOpenFileDialog(OpenFileDialogParams* Param)
     {
-        var @params = Marshal.PtrToStructure<OpenFileDialogParams>(IN);
         var ofn = new OpenFileDialog
         {
-            AddExtension = @params.AddExtension,
-            AddToRecent = @params.AddToRecent,
-            AutoUpgradeEnabled = @params.AutoUpgradeEnabled,
-            CheckFileExists = @params.CheckFileExists,
-            CheckPathExists = @params.CheckPathExists,
-            DereferenceLinks = @params.DereferenceLinks,
-            OkRequiresInteraction = @params.OkRequiresInteraction,
-            RestoreDirectory = @params.RestoreDirectory,
-            ShowHiddenFiles = @params.ShowHiddenFiles,
-            ShowPinnedPlaces = @params.ShowPinnedPlaces,
-            SupportMultiDottedExtensions = @params.SupportMultiDottedExtensions,
-            ValidateNames = @params.ValidateNames,
-            ClientGuid = @params.ClientGuid,
-            FilterIndex = @params.FilterIndex,
-            DefaultExt = @params.DefaultExt,
-            FileName = @params.FileName,
-            Filter = @params.Filter,
-            InitialDirectory = @params.InitialDirectory,
-            Title = @params.Title,
+            AddExtension = Param->AddExtension,
+            AddToRecent = Param->AddToRecent,
+            AutoUpgradeEnabled = Param->AutoUpgradeEnabled,
+            CheckFileExists = Param->CheckFileExists,
+            CheckPathExists = Param->CheckPathExists,
+            DereferenceLinks = Param->DereferenceLinks,
+            OkRequiresInteraction = Param->OkRequiresInteraction,
+            RestoreDirectory = Param->RestoreDirectory,
+            ShowHiddenFiles = Param->ShowHiddenFiles,
+            ShowPinnedPlaces = Param->ShowPinnedPlaces,
+            SupportMultiDottedExtensions = Param->SupportMultiDottedExtensions,
+            ValidateNames = Param->ValidateNames,
+            ClientGuid = Param->ClientGuid,
+            FilterIndex = Param->FilterIndex,
+            DefaultExt = Param->DefaultExt.ToString(),
+            FileName = Param->FileName.ToString(),
+            Filter = Param->Filter.ToString(),
+            InitialDirectory = Param->InitialDirectory.ToString(),
+            Title = Param->Title.ToString(),
 
-            Multiselect = @params.Multiselect,
-            ReadOnlyChecked = @params.ReadOnlyChecked,
-            SelectReadOnly = @params.SelectReadOnly,
-            ShowPreview = @params.ShowPreview,
-            ShowReadOnly = @params.ShowReadOnly,
+            Multiselect = Param->Multiselect,
+            ReadOnlyChecked = Param->ReadOnlyChecked,
+            SelectReadOnly = Param->SelectReadOnly,
+            ShowPreview = Param->ShowPreview,
+            ShowReadOnly = Param->ShowReadOnly,
         };
-
         var ofnRes = ofn.ShowDialog();
-        Res->DialogResult = (Data.DialogResult)ofnRes;
-        UnicodeByteBuffer.FillMalloc(ref Res->FileName, ofn.FileName);
+        UnicodeByteBuffer.FillMalloc(ref Param->FileName, ofn.FileName);
         if (ofn.Multiselect)
         {
-            UnicodeByteBuffer.FillMalloc(ref Res->FileNames, ofn.FileNames);
+            UnicodeByteBuffer.FillMalloc(ref Param->FileNames, ofn.FileNames);
         }
+        return (Data.DialogResult)ofnRes;
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ShowSaveFileDialog")]
@@ -127,13 +125,6 @@ public class API
         }
 
         return (Data.DialogResult)ofnRes;
-
-        //Res->DialogResult = (Data.DialogResult)ofnRes;
-        //UnicodeByteBuffer.FillMalloc(ref Res->SelectedPath, fb.SelectedPath);
-        //if (fb.Multiselect)
-        //{
-        //    UnicodeByteBuffer.FillMalloc(ref Res->SelectedPaths, fb.SelectedPaths);
-        //}
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ShowColorDialog")]
