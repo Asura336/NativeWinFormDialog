@@ -30,7 +30,7 @@ public class TestDialogs : MonoBehaviour
         {
             var ofn = new OpenFileDialog
             {
-                Title = "保存文件",
+                Title = "打开文件(Native)",
                 DefaultExt = "txt",
                 Filter = "文本文件（.txt）|*.txt|所有文件|*.*",
                 FileName = "未命名",
@@ -46,7 +46,7 @@ public class TestDialogs : MonoBehaviour
         {
             var sfn = new SaveFileDialog
             {
-                Title = "保存文件",
+                Title = "保存文件(Native)",
                 DefaultExt = "txt",
                 Filter = "文本文件（.txt）|*.txt|所有文件|*.*",
                 FileName = "未命名",
@@ -70,7 +70,7 @@ public class TestDialogs : MonoBehaviour
                 RootFolder = Environment.SpecialFolder.MyDocuments,
                 Multiselect = true,
                 Description = "文件夹浏览提示DEFG",
-                //UseDescriptionForTitle = true,
+                UseDescriptionForTitle = true,
                 ShowPinnedPlaces = true,
                 ShowNewFolderButton = true,
                 AddToRecent = true,

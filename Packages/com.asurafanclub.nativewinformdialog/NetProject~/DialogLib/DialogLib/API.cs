@@ -61,40 +61,38 @@ public class API
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ShowSaveFileDialog")]
-    public static unsafe void ShowSaveFileDialog(IntPtr IN, SaveFileDialogResult* Res)
-    {
-        var @params = Marshal.PtrToStructure<SaveFileDialogParams>(IN);
+    public static unsafe Data.DialogResult ShowSaveFileDialog(SaveFileDialogParams* Param)
+    { 
         var sfn = new SaveFileDialog
         {
-            AddExtension = @params.AddExtension,
-            AddToRecent = @params.AddToRecent,
-            AutoUpgradeEnabled = @params.AutoUpgradeEnabled,
-            CheckFileExists = @params.CheckFileExists,
-            CheckPathExists = @params.CheckPathExists,
-            DereferenceLinks = @params.DereferenceLinks,
-            OkRequiresInteraction = @params.OkRequiresInteraction,
-            RestoreDirectory = @params.RestoreDirectory,
-            ShowHiddenFiles = @params.ShowHiddenFiles,
-            ShowPinnedPlaces = @params.ShowPinnedPlaces,
-            SupportMultiDottedExtensions = @params.SupportMultiDottedExtensions,
-            ValidateNames = @params.ValidateNames,
-            ClientGuid = @params.ClientGuid,
-            FilterIndex = @params.FilterIndex,
-            DefaultExt = @params.DefaultExt,
-            FileName = @params.FileName,
-            Filter = @params.Filter,
-            InitialDirectory = @params.InitialDirectory,
-            Title = @params.Title,
+            AddExtension = Param->AddExtension,
+            AddToRecent = Param->AddToRecent,
+            AutoUpgradeEnabled = Param->AutoUpgradeEnabled,
+            CheckFileExists = Param->CheckFileExists,
+            CheckPathExists = Param->CheckPathExists,
+            DereferenceLinks = Param->DereferenceLinks,
+            OkRequiresInteraction = Param->OkRequiresInteraction,
+            RestoreDirectory = Param->RestoreDirectory,
+            ShowHiddenFiles = Param->ShowHiddenFiles,
+            ShowPinnedPlaces = Param->ShowPinnedPlaces,
+            SupportMultiDottedExtensions = Param->SupportMultiDottedExtensions,
+            ValidateNames = Param->ValidateNames,
+            ClientGuid = Param->ClientGuid,
+            FilterIndex = Param->FilterIndex,
+            DefaultExt = Param->DefaultExt.ToString(),
+            FileName = Param->FileName.ToString(),
+            Filter = Param->Filter.ToString(),
+            InitialDirectory = Param->InitialDirectory.ToString(),
+            Title = Param->Title.ToString(),
 
-            CheckWriteAccess = @params.CheckWriteAccess,
-            CreatePrompt = @params.CreatePrompt,
-            ExpandedMode = @params.ExpandedMode,
-            OverwritePrompt = @params.OverwritePrompt,
-        };
-
-        var sfnRes = sfn.ShowDialog();
-        Res->DialogResult = (Data.DialogResult)sfnRes;
-        UnicodeByteBuffer.FillMalloc(ref Res->FileName, sfn.FileName);
+            CheckWriteAccess = Param->CheckWriteAccess,
+            CreatePrompt = Param->CreatePrompt,
+            ExpandedMode = Param->ExpandedMode,
+            OverwritePrompt = Param->OverwritePrompt,
+        }; 
+        var sfnRes = sfn.ShowDialog(); 
+        UnicodeByteBuffer.FillMalloc(ref Param->FileName, sfn.FileName);
+        return (Data.DialogResult)sfnRes;
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ShowFolderBrowserDialog")]

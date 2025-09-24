@@ -93,19 +93,19 @@ namespace DialogLib
                 ? new Span<byte>(UnsafeHelper.MAllocT<byte>(defEx_size), defEx_size)
                 : defEx_size is 0 ? Span<byte>.Empty : stackalloc byte[defEx_size];
 
-            int filter_size = string.IsNullOrEmpty(DefaultExt) ? 0 : encoding.GetByteCount(DefaultExt);
+            int filter_size = string.IsNullOrEmpty(Filter) ? 0 : encoding.GetByteCount(Filter);
             bool filter_alloc = filter_size > tinyBufferLen;
             Span<byte> filter_buff = filter_alloc
                 ? new Span<byte>(UnsafeHelper.MAllocT<byte>(filter_size), filter_size)
                 : filter_size is 0 ? Span<byte>.Empty : stackalloc byte[filter_size];
 
-            int initDir_size = string.IsNullOrEmpty(DefaultExt) ? 0 : encoding.GetByteCount(DefaultExt);
+            int initDir_size = string.IsNullOrEmpty(InitialDirectory) ? 0 : encoding.GetByteCount(InitialDirectory);
             bool initDir_alloc = initDir_size > tinyBufferLen;
             Span<byte> initDir_buff = initDir_alloc
                 ? new Span<byte>(UnsafeHelper.MAllocT<byte>(initDir_size), initDir_size)
                 : initDir_size is 0 ? Span<byte>.Empty : stackalloc byte[initDir_size];
 
-            int title_size = string.IsNullOrEmpty(DefaultExt) ? 0 : encoding.GetByteCount(DefaultExt);
+            int title_size = string.IsNullOrEmpty(Title) ? 0 : encoding.GetByteCount(Title);
             bool title_alloc = title_size > tinyBufferLen;
             Span<byte> title_buff = title_alloc
                 ? new Span<byte>(UnsafeHelper.MAllocT<byte>(title_size), title_size)
@@ -119,23 +119,23 @@ namespace DialogLib
                 _defEx->count = encoding.GetBytes(DefaultExt, defEx_buff);
                 _defEx->buffer = defEx_pnt;
 
-                var _filter = &paramPnt->DefaultExt;
-                _filter->allocated = defEx_alloc;
-                _filter->length = defEx_buff.Length;
-                _filter->count = encoding.GetBytes(DefaultExt, defEx_buff);
-                _filter->buffer = defEx_pnt;
+                var _filter = &paramPnt->Filter;
+                _filter->allocated = filter_alloc;
+                _filter->length = filter_buff.Length;
+                _filter->count = encoding.GetBytes(Filter, filter_buff);
+                _filter->buffer = filter_pnt;
 
-                var _initDir = &paramPnt->DefaultExt;
-                _initDir->allocated = defEx_alloc;
-                _initDir->length = defEx_buff.Length;
-                _initDir->count = encoding.GetBytes(DefaultExt, defEx_buff);
-                _initDir->buffer = defEx_pnt;
+                var _initDir = &paramPnt->InitialDirectory;
+                _initDir->allocated = initDir_alloc;
+                _initDir->length = initDir_buff.Length;
+                _initDir->count = encoding.GetBytes(InitialDirectory, initDir_buff);
+                _initDir->buffer = initDir_pnt;
 
-                var _title = &paramPnt->DefaultExt;
-                _title->allocated = defEx_alloc;
-                _title->length = defEx_buff.Length;
-                _title->count = encoding.GetBytes(DefaultExt, defEx_buff);
-                _title->buffer = defEx_pnt;
+                var _title = &paramPnt->Title;
+                _title->allocated = title_alloc;
+                _title->length = title_buff.Length;
+                _title->count = encoding.GetBytes(Title, title_buff);
+                _title->buffer = title_pnt;
 
                 result = ShowOpenFileDialog(paramPnt);
 
