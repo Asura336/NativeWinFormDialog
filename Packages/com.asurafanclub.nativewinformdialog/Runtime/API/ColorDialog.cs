@@ -31,7 +31,7 @@ namespace DialogLib
             DialogResult result = default;
 
             var paramPnt = &@params;
-            //--------
+
             // CustomColors 内部实现长度固定，考虑栈分配？
             const int fixedCustomColorBuffLen = 16;
             uint* _fixedCustumColorsBuff = stackalloc uint[fixedCustomColorBuffLen];
@@ -45,11 +45,8 @@ namespace DialogLib
                 int count = Math.Min(fixedCustomColorBuffLen, CustomColors.Length);
                 for (int i = 0; i < count; i++)
                 {
+                    // Hack: ColorDialog.CustomColor 的二进制布局不是 ColorARGB
                     var tc = CustomColors[i];
-                    // HACK:
-                    // 在本机代码库传递自定义颜色缓冲区都靠直接复制内存
-                    // 但是回传的颜色结果正确，传入的颜色 R 通道和 B 通道对换了
-                    // 在这里手动处理一下
                     _cc->buffer[i] = new ColorARGB(0, tc.b, tc.g, tc.r);
                 }
             }
@@ -64,10 +61,10 @@ namespace DialogLib
                 var src = _customColors.buffer;
                 for (int i = 0; i < _customColors.count; i++)
                 {
-                    // 传回的自定义颜色高位（alpha）总是 0，这个颜色选择器不支持透明度，手动设置为不透明颜色
                     var c = src[i];
-                    c.a = 0xFF;
-                    _copyCustomColors[i] = c;
+                    // 传回的自定义颜色高位（alpha）总是 0，这个颜色选择器不支持透明度，手动设置为不透明颜色
+                    // Hack: ColorDialog.CustomColor 的二进制布局不是 ColorARGB
+                    _copyCustomColors[i] = new Color32(c.b, c.g, c.r, 0xFF);
                 }
                 CustomColors = _copyCustomColors;
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using DialogLib;
 using DialogLib.Data;
 using UnityEngine;
@@ -93,6 +94,15 @@ public class TestDialogs : MonoBehaviour
             Debug.Log(res);
             var color = cd.Color;
             Debug.Log($"Color => <color=#{color.r:X2}{color.g:X2}{color.b:X2}FF>{color}</color>");
+            var customColors = cd.CustomColors;
+            var sb = new StringBuilder(512);
+            sb.AppendLine("CustomColor:");
+            for (int i = 0; i < customColors.Length; i++)
+            {
+                var c = customColors    [i];
+                sb.AppendLine($"[{i}] <color=#{c.r:X2}{c.g:X2}{c.b:X2}FF>{c}</color>");
+            }
+            Debug.Log(sb);
         }
 
         GUILayout.EndVertical();
