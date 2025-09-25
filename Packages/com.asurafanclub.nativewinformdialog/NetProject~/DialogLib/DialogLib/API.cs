@@ -62,7 +62,7 @@ public class API
 
     [UnmanagedCallersOnly(EntryPoint = "ShowSaveFileDialog")]
     public static unsafe Data.DialogResult ShowSaveFileDialog(SaveFileDialogParams* Param)
-    { 
+    {
         var sfn = new SaveFileDialog
         {
             AddExtension = Param->AddExtension,
@@ -89,8 +89,8 @@ public class API
             CreatePrompt = Param->CreatePrompt,
             ExpandedMode = Param->ExpandedMode,
             OverwritePrompt = Param->OverwritePrompt,
-        }; 
-        var sfnRes = sfn.ShowDialog(); 
+        };
+        var sfnRes = sfn.ShowDialog();
         UnicodeByteBuffer.FillMalloc(ref Param->FileName, sfn.FileName);
         return (Data.DialogResult)sfnRes;
     }
@@ -152,15 +152,16 @@ public class API
         var res = cd.ShowDialog();
 
         Param->Color = cd.Color;
-        if (Param->CustomColors.length < cd.CustomColors.Length)
+        var _customColors = cd.CustomColors;
+        if (Param->CustomColors.length < _customColors.Length)
         {
             NativeBufferT<ColorARGB>.Free(ref Param->CustomColors);
-            NativeBufferT<ColorARGB>.MAlloc(ref Param->CustomColors, cd.CustomColors.Length);
+            NativeBufferT<ColorARGB>.MAlloc(ref Param->CustomColors, _customColors.Length);
         }
         int* dstPnt = (int*)Param->CustomColors.buffer;
-        Param->CustomColors.count = cd.CustomColors.Length;
+        Param->CustomColors.count = _customColors.Length;
         var dstSpan = new Span<int>(dstPnt, Param->CustomColors.count);
-        new Span<int>(cd.CustomColors).CopyTo(dstSpan);
+        new Span<int>(_customColors).CopyTo(dstSpan);
 
         return (Data.DialogResult)res;
     }
